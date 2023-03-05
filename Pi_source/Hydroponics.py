@@ -4,9 +4,12 @@
 # https://learn.adafruit.com/mcp3008-spi-adc/python-circuitpython
 # Started from example code before for relay control via GPIO pin
 # https://raspi.tv/2013/rpi-gpio-basics-5-setting-up-and-using-outputs-with-rpi-gpio
+# Site for GPIO interrupt example code
+# https://roboticsbackend.com/raspberry-pi-gpio-interrupts-tutorial/
 
 # V1 1-19-22  Initial developement
 # V2 3-4-22   Timers etc to run pump, adding relay support
+# V3 3-5-22   Add Flow meter via pin interrupt
 
 # SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
 # SPDX-License-Identifier: MIT
@@ -27,8 +30,9 @@ SOIL_SENSOR_WET = 26000       # This analog value and below is totally wet
 MAIN_LOOP_DELAY = .8          # Loop delay in seconds
 PUMP_TRIGGER = 10             # If below this value of moisture percent run pump
 PUMP_RUN_TIME = 5             # Amount of time in seconds the pump runs
-PUMP_THROTTLE_TIME = 5        # Minimum amount of time between pump runs
+PUMP_THROTTLE_TIME = 60       # Minimum amount of time between pump runs
 RELAY_PIN_CONTROL = 16        # Pin on Pi for relay pump control (BCM mode)
+FLOW_PIN_INPUT = 25           # Pin that flow meter is attached
 ###############################################################################################
 
 # create the spi bus
@@ -41,6 +45,16 @@ cs = digitalio.DigitalInOut(board.D5)
 GPIO.setmode(GPIO.BCM)                 # pick BCM for pin layout
 GPIO.setup(RELAY_PIN_CONTROL,GPIO.OUT) # make GPIO 16 an output
 GPIO.output(RELAY_PIN_CONTROL,0)       # force pin low to begin (relay off)
+
+flow_count = 0  # used to store total flow count
+# routine for flow meter pin interrupt
+def flow_meter_trigger(channel):
+   global flow_count
+   flow_count = flow_count + 1
+
+# setup Flow meter input pin - 25
+GPIO.setup(FLOW_PIN_INPUT,GPIO.IN,pull_up_down=GPIO.PUD_DOWN)
+GPIO.add_event_detect(FLOW_PIN_INPUT,GPIO.FALLING,callback=flow_meter_trigger,bouncetime=5)
 
 # pump relay control function
 def pump_control(running):
@@ -85,6 +99,8 @@ while True:
 
    average_percent = average_percent / NUM_SOIL_SENSORS
    print("[","%.0f"%average_percent,"]",sep='',end="")
+
+   print(" {",flow_count,"}",sep='',end="")
 
    time_save=time.time() # avoiding case where time changes while logic is passed through
 
