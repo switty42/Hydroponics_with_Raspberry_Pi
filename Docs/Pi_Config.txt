@@ -1,0 +1,14 @@
+Pi configuration 3-6-23
+_________________________
+
+SPI on Pi must be turned on for MCP AtoD to work, use (sudo raspi-config)
+
+Scripts and Python code loaded in /home/pi/bin/Hydroponics/
+
+crontab.pi should be the pi user's crontab (to wrap logs)
+
+rc.local should be copied to /etc (or the one there edited to start Python code at boot)
+
+Make sure scripts have execute bit set chmod 755
+
+Hydroponics code runs as the pi user
