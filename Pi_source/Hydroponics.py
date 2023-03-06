@@ -7,9 +7,10 @@
 # Site for GPIO interrupt example code
 # https://roboticsbackend.com/raspberry-pi-gpio-interrupts-tutorial/
 
-# V1 1-19-22  Initial developement
-# V2 3-4-22   Timers etc to run pump, adding relay support
-# V3 3-5-22   Add Flow meter via pin interrupt
+# V1 1-19-23  Initial developement
+# V2 3-4-23   Timers etc to run pump, adding relay support
+# V3 3-5-23   Add Flow meter via pin interrupt
+# V4 3-6-23   Add timestamp to log and startup messages
 
 # SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
 # SPDX-License-Identifier: MIT
@@ -22,18 +23,33 @@ import board
 import RPi.GPIO as GPIO
 import adafruit_mcp3xxx.mcp3008 as MCP
 from adafruit_mcp3xxx.analog_in import AnalogIn
+from datetime import datetime
 
 ################### Constants #################################################################
+VERSION = 4                   # Version of this code
 NUM_SOIL_SENSORS = 5          # Number of soil sensors attached (must attach in order 0,1,2...)
 SOIL_SENSOR_DRY = 48500       # This analog value and above is totally dry
 SOIL_SENSOR_WET = 26000       # This analog value and below is totally wet
 MAIN_LOOP_DELAY = .8          # Loop delay in seconds
 PUMP_TRIGGER = 10             # If below this value of moisture percent run pump
-PUMP_RUN_TIME = 5             # Amount of time in seconds the pump runs
-PUMP_THROTTLE_TIME = 60       # Minimum amount of time between pump runs
+PUMP_RUN_TIME = 20            # Amount of time in seconds the pump runs
+PUMP_THROTTLE_TIME = 20       # Minimum amount of time between pump runs
 RELAY_PIN_CONTROL = 16        # Pin on Pi for relay pump control (BCM mode)
 FLOW_PIN_INPUT = 25           # Pin that flow meter is attached
 ###############################################################################################
+
+print("Starting",datetime.now().strftime("%m%d%y %H:%M:%S"))
+print("Version",VERSION)
+print("Number of Soil Sensors Configured",NUM_SOIL_SENSORS)
+print("Soil Sensor Calibration, DRY",SOIL_SENSOR_DRY)
+print("Soil Sensor Calibration, WET",SOIL_SENSOR_WET)
+print("Loop Sample Delay",MAIN_LOOP_DELAY)
+print("Percent Pump Trigger Threshold to Run",PUMP_TRIGGER)
+print("Pump Run Time in Seconds",PUMP_RUN_TIME)
+print("Pump Run Time Throttle in Seconds",PUMP_THROTTLE_TIME)
+print("Relay control GPIO pin",RELAY_PIN_CONTROL)
+print("Flow control sensor GPIO pin",FLOW_PIN_INPUT)
+print(".....................................................")
 
 # create the spi bus
 spi = busio.SPI(clock=board.SCK, MISO=board.MISO, MOSI=board.MOSI)
@@ -83,6 +99,7 @@ pump_run_clock = 0
 pump_throttle_clock = 0
 
 while True:
+   print(datetime.now().strftime("%m%d%y %H:%M:%S")," ",end="",sep='') # Print timestamp
    average_percent = 0
    for a in range(0,NUM_SOIL_SENSORS):
       SoilRaw[a] = SoilArray[a].value
@@ -92,9 +109,10 @@ while True:
          SoilPercent[a] = 100
       else:
          SoilPercent[a] = ((SoilRaw[a] - SOIL_SENSOR_WET)/(SOIL_SENSOR_DRY - SOIL_SENSOR_WET))*100 
-         SoilPercent[a] = 100 - SoilPercent[a]
+         SoilPercent[a] = 100 - SoilPercent[a] # Flipping wet and dry (100% is totally wet)
 
       average_percent = average_percent + SoilPercent[a]
+
       print("S",a,":",SoilRaw[a]," (","%.0f"%SoilPercent[a],") ",end="",sep='')
 
    average_percent = average_percent / NUM_SOIL_SENSORS
