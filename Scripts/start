@@ -1,0 +1,2 @@
+cd /home/pi/bin/Hydroponics
+nohup /home/pi/bin/Hydroponics/start2 &

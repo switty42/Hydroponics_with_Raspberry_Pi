@@ -1,0 +1,6 @@
+cd /home/pi/bin/Hydroponics
+cp /home/pi/bin/Hydroponics/log4 /home/pi/bin/Hydroponics/log5
+cp /home/pi/bin/Hydroponics/log3 /home/pi/bin/Hydroponics/log4
+cp /home/pi/bin/Hydroponics/log2 /home/pi/bin/Hydroponics/log3
+cp /home/pi/bin/Hydroponics/log  /home/pi/bin/Hydroponics/log2
+cat /dev/null > /home/pi/bin/Hydroponics/log
