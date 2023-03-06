@@ -7,7 +7,8 @@ AITRIP Capacitive Soil Sensors
 
 (SPI on Pi must be turned on for MCP AtoD to work, use sudo raspi-config)
 ____________________________________________________
-PI
+
+Pi
 
 Pin 1 is away from USB and Ethernet ports
 Pin 1 is on inside
