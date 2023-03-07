@@ -11,6 +11,7 @@
 # V2 3-4-23   Timers etc to run pump, adding relay support
 # V3 3-5-23   Add Flow meter via pin interrupt
 # V4 3-6-23   Add timestamp to log and startup messages
+# V5 3-7-23   Catch ctrl-c and kill - turn off pump before program exit
 
 # SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
 # SPDX-License-Identifier: MIT
@@ -24,9 +25,11 @@ import RPi.GPIO as GPIO
 import adafruit_mcp3xxx.mcp3008 as MCP
 from adafruit_mcp3xxx.analog_in import AnalogIn
 from datetime import datetime
+import signal
+import sys
 
 ################### Constants #################################################################
-VERSION = 4                   # Version of this code
+VERSION = 5                   # Version of this code
 NUM_SOIL_SENSORS = 5          # Number of soil sensors attached (must attach in order 0,1,2...)
 SOIL_SENSOR_DRY = 48500       # This analog value and above is totally dry
 SOIL_SENSOR_WET = 26000       # This analog value and below is totally wet
@@ -78,6 +81,16 @@ def pump_control(running):
       GPIO.output(RELAY_PIN_CONTROL,1)
    else:
       GPIO.output(RELAY_PIN_CONTROL,0)
+
+# Catch ctrl-c and turn off pump before exit
+def signal_handler(sig,frame):
+   pump_control(False)
+   print("Program exit")
+   sys.exit(0)
+
+# Install signal handler for ctrl-c
+signal.signal(signal.SIGINT,signal_handler)
+signal.signal(signal.SIGTERM,signal_handler)
 
 # create the mcp object
 mcp = MCP.MCP3008(spi,cs)
