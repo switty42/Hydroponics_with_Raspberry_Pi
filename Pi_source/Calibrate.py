@@ -11,6 +11,7 @@
 
 # V1 3-28-23  Initial developement
 # V2 4-2-23   Add percentages and CSV support to output
+# V3 4-3-23   Fix SoilPercent bug
 
 # SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
 # SPDX-License-Identifier: MIT
@@ -33,7 +34,7 @@ import signal
 import sys
 
 ################### Constants #################################################################
-VERSION = 2                   # Version of this code
+VERSION = 3                   # Version of this code
 NUM_SOIL_SENSORS = 1          # Number of soil sensors
 SOIL_SENSOR_DRY = 48600       # This analog value and above is totally dry
 SOIL_SENSOR_WET = 23000       # This analog value and below is totally wet
@@ -123,6 +124,10 @@ signal.signal(signal.SIGTERM,signal_handler)
 
 # Setup array to hold MCP objects
 SoilArray = []
+
+SoilPercent = 0
+SoilRaw = 0
+run_time = 0
 
 # create the mcp object
 mcp = MCP.MCP3008(spi,cs)
