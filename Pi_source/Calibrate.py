@@ -115,6 +115,7 @@ def print_data(SoilRaw,SoilPercent,flow_count,run_time,cycle_status,wet_target,w
    _p(str(wet_target),9,True)
    _p(str(wet_target_percent),6,False)
    print("")
+   sys.stdout.flush()
 
 # Install signal handler for ctrl-c
 signal.signal(signal.SIGINT,signal_handler)
